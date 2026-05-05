@@ -1,6 +1,6 @@
 # GitHub Project Research Skill
 
-[中文版本](./README_zh.md)
+[English](./README.md) | [中文版本](./README_zh.md)
 
 A Claude Code Skill for structured, multi-source deep research on GitHub projects. This isn't a simple README summary—it conducts research like a serious technical selection engineer, collecting data from multiple sources, autonomously generating and answering 8-10 real-world questions, and ultimately producing a research report with conclusions, evidence, and transparent thinking processes.
 

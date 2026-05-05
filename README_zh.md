@@ -1,6 +1,6 @@
 # GitHub 项目调研 Skill
 
-[English Version](./README.md)
+[English](./README.md) | [中文版本](./README_zh.md)
 
 一个 Claude Code Skill，用于对 GitHub 项目进行结构化、多渠道的深度调研。不是简单的 README 摘要——它会像一个认真的技术选型工程师那样，从多个渠道采集数据，自主提出 8-10 个现实问题并回答，最终生成一份有结论、有证据、有思考过程的调研报告。
 
