@@ -6,7 +6,7 @@
 
 给它一个 GitHub 项目（URL 或 `owner/repo`），它会：
 
-1. **多渠道采集数据** — GitHub API、Hacker News、StackOverflow、npm/PyPI、知乎/小红书（如 WebSearch 可用）
+1. **多渠道采集数据** — GitHub、知乎/小红书、Hacker News、StackOverflow、npm/PyPI、Reddit
 2. **自主提问并回答** — 站在不同角色（技术负责人、生产环境开发者、怀疑论者、新手）角度，生成 8-10 个现实中真正会问的问题
 3. **展示思考过程** — 报告包含 10 个核心问题的完整分析链路：问题 → 做了什么 → 结论 → 追问
 4. **生成结构化报告** — 8 个章节，每个章节末尾有苏格拉底式追问，挑战该节结论
@@ -82,15 +82,15 @@ cp -r github-project-research ~/.claude/skills/
 
 ## 数据渠道
 
-| 渠道 | 方式 | 可靠性 |
-|------|------|--------|
-| GitHub API | `gh` CLI / `curl` | 高 |
-| Hacker News | Algolia API（`curl`） | 高 |
-| StackOverflow | SE API（`curl`） | 高 |
-| npm / PyPI | Registry API（`curl`） | 高 |
-| 知乎 / 小红书 / 掘金 | WebSearch（环境依赖） | 低 |
-
-**降级策略：** 当 WebSearch 不可用时，用 GitHub issues 中的关键词（`alternative`、`vs`、`limitation`、`wontfix`）做社区调研替代，并在报告中标注。
+| 渠道 | 工具 | 说明 |
+|------|------|------|
+| GitHub | firecrawl scrape | 仓库页、README、releases、issues |
+| Hacker News | firecrawl search | 技术深度讨论、架构评价 |
+| StackOverflow | firecrawl search | 常见问题、解决方案 |
+| npm / PyPI | firecrawl scrape | 下载量、版本历史 |
+| 知乎 / 小红书 / 掘金 | firecrawl search | 真实用户反馈、评测（SPA 站点） |
+| Reddit | firecrawl search | 英文社区讨论 |
+| 竞品调研 | firecrawl search | alternatives、vs |
 
 ## 交互式工作流
 

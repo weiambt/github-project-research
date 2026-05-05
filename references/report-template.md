@@ -304,39 +304,55 @@
 
 ## 多渠道调研指南
 
-在数据采集阶段，不要只依赖 GitHub。从多个渠道获取信息，交叉验证。
+在数据采集阶段，不要只依赖 GitHub。从多个渠道获取信息，交叉验证。所有数据采集统一使用 firecrawl。
 
 ### 渠道优先级
 
-| 渠道 | 用途 | 搜索方式 | 可靠性 |
-|------|------|---------|--------|
-| GitHub | 源码、README、issues、releases | `gh` CLI / curl | 高 |
-| Hacker News | 技术深度讨论、架构评价 | `curl "https://hn.algolia.com/api/v1/search?query=项目名&tags=story"` | 高 |
-| Stack Overflow | 常见问题、解决方案 | `curl "https://api.stackexchange.com/2.3/search?intitle=项目名&site=stackoverflow"` | 高 |
-| npm/PyPI | 下载量、版本历史 | `curl "https://api.npmjs.org/downloads/point/last-week/包名"` | 高 |
-| 小红书/知乎/掘金 | 真实用户反馈、评测 | WebSearch（如可用）；SPA 站点 curl 不可用 | 低（需 JS 渲染） |
-| Reddit | 英文社区讨论 | WebSearch（如可用）；curl 不可达 | 低（网络限制） |
+| 渠道 | 工具 | 说明 |
+|------|------|------|
+| GitHub | firecrawl scrape | 仓库页、README、releases、issues |
+| Hacker News | firecrawl search | 技术深度讨论、架构评价 |
+| Stack Overflow | firecrawl search | 常见问题、解决方案 |
+| npm/PyPI | firecrawl scrape | 下载量、版本历史 |
+| 小红书/知乎/掘金 | firecrawl search | 真实用户反馈、评测（SPA 站点） |
+| Reddit | firecrawl search | 英文社区讨论 |
+| 竞品调研 | firecrawl search | alternatives、vs |
 
-> **降级提示：** WebSearch/WebFetch 在多数环境不可用。HN/SO 用 curl JSON API 是可靠方案。如社区数据获取失败，用 GitHub issues 做替代（搜索关键词：`alternative`、`vs`、`limitation`、`wontfix`、`why`），并在报告中标注。
+### 搜索命令模板
 
-### 搜索关键词模板
-
-**中文社区（WebSearch，如可用）：**
-- `WebSearch 'site:xiaohongshu.com "项目名"'` → 小红书评测
-- `WebSearch 'site:zhihu.com "项目名" 评测'` → 知乎评测
-- `WebSearch 'site:zhihu.com "项目名" 体验/踩坑'` → 知乎使用体验
-- `WebSearch 'site:juejin.cn "项目名"'` → 掘金文章
-- 如果项目名是英文，同时搜中文描述（如 `"AI幻灯片"`、`"Claude Code 工具"`）
-
-**Hacker News（Algolia API）：**
+**GitHub：**
 ```bash
-curl -s "https://hn.algolia.com/api/v1/search?query=项目名&tags=story"
-curl -s "https://hn.algolia.com/api/v1/search?query=项目名&tags=comment"
+firecrawl scrape https://github.com/<owner/repo> -o .firecrawl/github-repo.md --only-main-content
+firecrawl scrape https://github.com/<owner/repo>#readme -o .firecrawl/readme.md --only-main-content
+firecrawl scrape https://github.com/<owner/repo>/releases -o .firecrawl/releases.md --only-main-content
+firecrawl scrape https://github.com/<owner/repo>/issues -o .firecrawl/issues.md --only-main-content
 ```
 
-**StackOverflow（API）：**
+**中文社区：**
 ```bash
-curl -s "https://api.stackexchange.com/2.3/search?order=desc&sort=activity&intitle=项目名&site=stackoverflow"
+firecrawl search 'site:xiaohongshu.com "项目名"' -o .firecrawl/xhs.json --json
+firecrawl search 'site:zhihu.com "项目名" 评测' -o .firecrawl/zhihu-review.json --json
+firecrawl search 'site:zhihu.com "项目名" 体验/踩坑' -o .firecrawl/zhihu-feedback.json --json
+firecrawl search 'site:juejin.cn "项目名"' -o .firecrawl/juejin.json --json
+```
+
+**英文社区：**
+```bash
+firecrawl search '"项目名" site:news.ycombinator.com' -o .firecrawl/hackernews.json --json
+firecrawl search '"项目名" site:stackoverflow.com' -o .firecrawl/stackoverflow.json --json
+firecrawl search 'site:reddit.com "项目名" review' -o .firecrawl/reddit-review.json --json
+```
+
+**包管理器：**
+```bash
+firecrawl scrape https://www.npmjs.com/package/<包名> -o .firecrawl/npm.md --only-main-content
+firecrawl scrape https://pypi.org/project/<包名> -o .firecrawl/pypi.md --only-main-content
+```
+
+**竞品调研：**
+```bash
+firecrawl search '"项目名" alternative vs' -o .firecrawl/alternatives.json --json
+firecrawl search '"项目名" limitations problems' -o .firecrawl/problems.json --json
 ```
 
 ### 信息交叉验证

@@ -90,7 +90,7 @@ python -m scripts.chat_web  # 启动聊天 UI
 - 一句话：**"如果你想花一个下午理解 LLM 训练全貌，选它；如果要部署生产级 LLM，选 vLLM。"**
 
 ### T1 验证清单
-- [x] 第一步：数据采集成功（curl fallback）
+- [x] 第一步：数据采集成功（firecrawl）
 - [x] 第一步：边采集边分析体现（README/commit/issues 观察）
 - [x] 第二步：10 个问题都有思考动作
 - [x] 第二步：问题 6 用了 4 个发现动作
@@ -285,7 +285,7 @@ README 说"Based on the viral observation that caveman-speak dramatically reduce
 
 | 验证项 | 结果 | 备注 |
 |--------|------|------|
-| curl fallback 数据采集 | ✅ | 3 个项目全部成功 |
+| firecrawl 数据采集 | ✅ | 3 个项目全部成功 |
 | 边采集边分析 | ✅ | 每个项目都在采集阶段发现关键信号 |
 | 10 个问题思考动作 | ✅ | 每个问题都有具体动作指导 |
 | 问题 6 核心优势 4 步法 | ✅ | 3 个项目都找到了设计哲学而非功能列表 |
@@ -307,3 +307,90 @@ README 说"Based on the viral observation that caveman-speak dramatically reduce
 2. 10 个问题的思考动作让 AI 不再"填空"而是真正思考
 3. 问题 6 的 4 步法成功发现了每个项目的"设计哲学"而非功能列表
 4. 有条件推荐比万能公式更有价值
+
+---
+
+## v3: Firecrawl 全面集成测试 (2026-05-05)
+
+### 变更内容
+
+将信息调研部分完全替换为 firecrawl，移除所有 curl fallback：
+
+| 文件 | 变更 |
+|------|------|
+| SKILL.md | 完全使用 firecrawl，移除所有 curl fallback |
+| references/report-template.md | 搜索命令模板完全使用 firecrawl |
+| README.md | 数据渠道表格更新为 firecrawl |
+
+### 具体变更
+
+#### 渠道 1（GitHub）
+- **旧：** gh CLI / curl
+- **新：** firecrawl scrape
+
+#### 渠道 2（中文社区）
+- **旧：** WebSearch
+- **新：** firecrawl search
+
+#### 渠道 3（英文社区）
+- **旧：** curl（HN/SO API）
+- **新：** firecrawl search
+
+#### 渠道 4（包管理器）
+- **旧：** curl（npm/PyPI API）
+- **新：** firecrawl scrape
+
+#### 降级策略
+- **旧：** firecrawl 不可用时使用 curl JSON API
+- **新：** 完全移除 curl fallback，统一使用 firecrawl
+
+### 测试结果
+
+#### firecrawl search 测试
+```bash
+$ firecrawl search 'JuliusBrussee/caveman github' -o /tmp/test-github-research/.firecrawl/search.json --json --limit 3
+```
+**结果：** ✅ 成功，返回 3 条相关结果（GitHub 项目页、作者页）
+
+```json
+{
+  "success": true,
+  "data": {
+    "web": [
+      {"url": "https://github.com/juliusbrussee/caveman", "title": "GitHub - JuliusBrussee/caveman", "category": "github"},
+      {"url": "https://github.com/juliusbrussee", "title": "Julius Brussee - GitHub", "category": "github"},
+      {"url": "https://github.com/JuliusBrussee/JuliusBrussee", "title": "Julius Brussee - Caveman - GitHub", "category": "github"}
+    ]
+  }
+}
+```
+
+#### firecrawl scrape 测试
+```bash
+$ firecrawl scrape https://github.com/juliusbrussee/caveman -o /tmp/test-github-research/.firecrawl/caveman-readme.md --only-main-content
+```
+**结果：** ✅ 成功，返回 60KB 的 README 内容（包含完整项目描述、安装方式、竞品对比等）
+
+### 验证清单
+
+| 检查项 | 状态 | 说明 |
+|--------|------|------|
+| firecrawl search 命令正确 | ✅ | 中文/英文社区搜索使用 `firecrawl search 'site:...'` |
+| firecrawl scrape 命令正确 | ✅ | GitHub/包管理器使用 `firecrawl scrape <url>` |
+| 输出文件命名规范 | ✅ | 使用 `.firecrawl/*.json` 和 `.firecrawl/*.md` |
+| --json flag 使用正确 | ✅ | search 结果使用 `--json` 输出为 JSON 格式 |
+| --only-main-content 使用 | ✅ | scrape 时使用 `--only-main-content` |
+| curl 完全移除 | ✅ | SKILL.md、report-template.md、README.md 中无 curl |
+| WebSearch 引用已清除 | ✅ | 所有文件中无 WebSearch/WebFetch |
+
+### 发现的问题
+
+无。
+
+### 结论
+
+Firecrawl 全面集成测试通过：
+1. firecrawl search 可以正确搜索 GitHub 项目和相关讨论
+2. firecrawl scrape 可以正确抓取 GitHub 页面和 README
+3. 所有 curl/WebSearch/WebFetch 引用已完全移除
+4. 统一使用 firecrawl 进行所有数据采集

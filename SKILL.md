@@ -44,112 +44,91 @@ output_dir: ~/research-docs
 
 #### 渠道 1：GitHub（基础数据）
 
-优先使用 `gh` CLI，否则依次降级：
-
-**有 `gh` CLI 时：**
+使用 firecrawl 抓取 GitHub 相关页面：
 
 ```
-- gh repo view <owner/repo>          → star 数、描述、语言、协议
-- gh api repos/<owner/repo>/readme   → README 内容
-- gh api repos/<owner/repo>/contents → 顶层目录结构
-- gh api repos/<owner/repo>/releases?per_page=3  → 最新版本
-- gh issue list --repo <owner/repo> --limit 10   → 社区活跃度
+# 抓取 GitHub 仓库首页（包含 star 数、描述、语言、协议等）
+firecrawl scrape https://github.com/<owner/repo> -o .firecrawl/github-repo.md --only-main-content
+
+# 抓取 README
+firecrawl scrape https://github.com/<owner/repo>#readme -o .firecrawl/readme.md --only-main-content
+
+# 抓取 releases 页面
+firecrawl scrape https://github.com/<owner/repo>/releases -o .firecrawl/releases.md --only-main-content
+
+# 抓取 issues 列表
+firecrawl scrape https://github.com/<owner/repo>/issues -o .firecrawl/issues.md --only-main-content
 ```
 
-**无 `gh` CLI——尝试 `curl`（GitHub API）：**
+同时获取包清单文件：
 ```
-- curl https://api.github.com/repos/<owner/repo>           → JSON 元数据
-- curl https://api.github.com/repos/<owner/repo>/contents  → 目录列表
-- curl https://api.github.com/repos/<owner/repo>/releases?per_page=3 → 最新版本
-- curl https://raw.githubusercontent.com/<owner/repo>/main/README.md → README
-- curl https://raw.githubusercontent.com/<owner/repo>/main/package.json（或 go.mod、Cargo.toml 等）→ 包清单
-```
+# package.json（如有）
+firecrawl scrape https://raw.githubusercontent.com/<owner/repo>/main/package.json -o .firecrawl/package.json
 
-**无 `curl`——使用 WebFetch/WebSearch：**
+# go.mod（如有）
+firecrawl scrape https://raw.githubusercontent.com/<owner/repo>/main/go.mod -o .firecrawl/go.mod
 
+# Cargo.toml（如有）
+firecrawl scrape https://raw.githubusercontent.com/<owner/repo>/main/Cargo.toml -o .firecrawl/cargo.toml
 ```
-- WebFetch https://github.com/<owner/repo>        → 仓库页面
-- WebFetch https://raw.githubusercontent.com/<owner/repo>/main/README.md → README
-- WebSearch "<owner/repo> github"                  → 补充元数据
-```
-
-同时获取包清单（package.json、go.mod、Cargo.toml 等）以了解依赖和版本信息。
 
 #### 渠道 2：中文社区（知乎、小红书、掘金）
 
-**小红书、知乎、掘金等中文社区有大量真实用户反馈，但均为 SPA 站点，curl 只能拿到空 HTML 壳。** 如 WebSearch 可用，优先搜索这些渠道：
+小红书、知乎、掘金等中文社区有大量真实用户反馈。使用 firecrawl search 搜索：
 
 ```
-- WebSearch 'site:xiaohongshu.com "项目名"'           → 小红书评测/体验笔记
-- WebSearch 'site:zhihu.com "项目名" 评测'             → 知乎评测文章
-- WebSearch 'site:zhihu.com "项目名" 体验/踩坑'        → 知乎使用体验
-- WebSearch 'site:zhihu.com "项目名" 替代方案'         → 知乎替代方案讨论
-- WebSearch 'site:juejin.cn "项目名"'                   → 掘金技术文章
+firecrawl search 'site:xiaohongshu.com "项目名"' -o .firecrawl/xhs.json --json
+firecrawl search 'site:zhihu.com "项目名" 评测' -o .firecrawl/zhihu-review.json --json
+firecrawl search 'site:zhihu.com "项目名" 体验/踩坑' -o .firecrawl/zhihu-feedback.json --json
+firecrawl search 'site:zhihu.com "项目名" 替代方案' -o .firecrawl/zhihu-alternative.json --json
+firecrawl search 'site:juejin.cn "项目名"' -o .firecrawl/juejin.json --json
 ```
 
-如 WebSearch 不可用，跳过此渠道，在报告中标注。用 GitHub issues 做替代。
+#### 渠道 3：英文社区（Hacker News、StackOverflow、Reddit）
 
-#### 渠道 3：英文社区与 API 数据
-
-**通过 curl 可靠访问的 JSON API：**
-
-```bash
-# Hacker News（通过 Algolia API，可靠）
-curl -s "https://hn.algolia.com/api/v1/search?query=项目名&tags=story" | python3 -c "
-import sys,json; data=json.load(sys.stdin)
-for h in data.get('hits',[])[:5]:
-    print(f\"  {h['title']} | {h.get('points',0)}pts | {h.get('num_comments',0)}c\")"
-
-# StackOverflow API（可靠）
-curl -s "https://api.stackexchange.com/2.3/search?order=desc&sort=activity&intitle=项目名&site=stackoverflow" | python3 -c "
-import sys,json; data=json.load(sys.stdin)
-for q in data.get('items',[])[:5]:
-    print(f\"  {q['title']} | score:{q['score']} | answers:{q['answer_count']}\")"
-
-# npm 下载量（如适用）
-curl -s "https://api.npmjs.org/downloads/point/last-week/包名"
-
-# GitHub 竞品搜索
-curl -s "https://api.github.com/search/repositories?q=关键词&sort=stars&per_page=5"
-```
-
-**WebSearch/WebFetch 可选（如环境支持）：**
+使用 firecrawl search 搜索英文技术社区：
 
 ```
-- WebSearch 'site:reddit.com "project name" review'   → Reddit 讨论
-- WebSearch 'site:zhihu.com "项目名" 评测'             → 知乎评测
-- WebSearch 'site:juejin.cn "项目名"'                   → 掘金文章
-```
+# Hacker News 讨论
+firecrawl search '"项目名" site:news.ycombinator.com' -o .firecrawl/hackernews.json --json
+firecrawl search '"项目名"HN' -o .firecrawl/hackernews-general.json --json
 
-> **注意：** 知乎、掘金、V2EX 是 SPA 站点，curl 只能拿到空 HTML 壳，需要 JS 渲染。如 WebSearch 不可用，这些渠道无法访问。
+# StackOverflow 问题
+firecrawl search '"项目名" site:stackoverflow.com' -o .firecrawl/stackoverflow.json --json
+
+# Reddit 讨论
+firecrawl search 'site:reddit.com "项目名" review' -o .firecrawl/reddit-review.json --json
+firecrawl search 'site:reddit.com "项目名" alternative' -o .firecrawl/reddit-alternative.json --json
+```
 
 #### 渠道 4：包管理器数据
 
-```bash
+```
 # npm 周下载量
-curl -s "https://api.npmjs.org/downloads/point/last-week/包名"
+firecrawl scrape https://www.npmjs.com/package/<包名> -o .firecrawl/npm.md --only-main-content
 
 # PyPI 信息
-curl -s "https://pypi.org/pypi/包名/json" | python3 -c "
-import sys,json; d=json.load(sys.stdin)
-print(f\"  version: {d['info']['version']}\")"
+firecrawl scrape https://pypi.org/project/<包名> -o .firecrawl/pypi.md --only-main-content
 ```
 
-4. 分类项目类型
-5. 搜索竞品（中英文都要搜）：
-   - 英文：`"<project> alternatives"`、`"<project> vs <competitor>"`
-   - 中文：`"项目名 替代方案"`、`"项目名 对比"`、`"项目名 vs"`
+#### 渠道 5：竞品调研
 
-**降级策略——大多数环境只有 GitHub API：**
+```
+# 搜索竞品
+firecrawl search '"项目名" alternative vs' -o .firecrawl/alternatives.json --json
+firecrawl search '"项目名" limitations problems' -o .firecrawl/problems.json --json
 
-外部搜索工具（WebSearch/WebFetch）在很多环境不可用，知乎/小红书等 SPA 站点 curl 无法获取内容。遇到这种情况：
+# 搜索 GitHub 上的类似项目
+firecrawl search 'site:github.com "项目名" similar' -o .firecrawl/similar.json --json
+```
 
-1. **不要停下来，继续调研。** GitHub API（curl）是可靠的，先把 GitHub 数据吃透。
-2. **HN 和 SO 用 curl JSON API。** 这两个 API 不需要认证，直接可用。
-3. **用 GitHub issues 做社区调研替代。** 搜索 issues 中的关键词：`alternative`、`vs`、`instead of`、`comparison`、`why`、`limitation`、`wontfix`。这些 issue 里有用户的真实反馈。
-4. **用 GitHub search 做竞品发现。** `curl "https://api.github.com/search/repositories?q=关键词&sort=stars"` 可以搜到竞品。
-5. **在报告中标注哪些渠道未能获取。** 在 QA 部分注明具体哪些渠道可用、哪些不可用。
-6. **QA 部分仍要自主生成。** 即使没有社区数据，也要站在用户角度提出 8-10 个现实问题。GitHub issues 里的讨论可以作为部分问题的素材。
+#### 渠道 6：官方文档与博客
+
+如果项目有官方文档或博客，抓取它们获取更深入的信息：
+```
+firecrawl scrape https://<项目官网>/docs -o .firecrawl/docs.md --only-main-content
+firecrawl scrape https://<项目官网>/blog -o .firecrawl/blog.md --only-main-content
+```
 
 **边采集边思考——不要等第二步才开始分析：**
 - 读 README 时：它强调什么？不提什么？第一段是不是在说"为什么做这个"？
@@ -263,6 +242,17 @@ print(f\"  version: {d['info']['version']}\")"
 - 对比项目时，并排展示发现
 - 每个项目生成独立的报告文件
 
+## 数据渠道
+
+| 渠道 | 工具 | 说明 |
+|------|------|------|
+| GitHub | firecrawl scrape | 仓库页、README、releases、issues |
+| 中文社区 | firecrawl search | 知乎、小红书、掘金 |
+| 英文社区 | firecrawl search | HN、StackOverflow、Reddit |
+| 包管理器 | firecrawl scrape | npm、PyPI |
+| 竞品调研 | firecrawl search | alternatives、vs |
+| 官方文档 | firecrawl scrape | docs、blog |
+
 ## 质量检查清单
 
 在交付发现或生成报告前：
@@ -275,6 +265,6 @@ print(f\"  version: {d['info']['version']}\")"
 - [ ] 总结是有条件推荐（推荐度 + 推荐条件 + 不推荐条件），不是万能公式
 - [ ] QA 章节有 8-10 个自主生成的现实问题（不是从 GitHub issues 抄的）
 - [ ] 分析过程透明化（10 个核心问题的思考过程展示给用户）
-- [ ] 多渠道调研（至少 GitHub + HN API/SO API 中的一个；如不可用，在报告中标注）
+- [ ] 多渠道调研（至少 GitHub + 1 个社区渠道）
 - [ ] 报告使用用户的语言（与用户输入语言一致）
 - [ ] 生成后向用户输出报告文件路径
