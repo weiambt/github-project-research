@@ -1,124 +1,124 @@
-# GitHub 项目调研 Skill
+# GitHub Project Research Skill
 
-一个 Claude Code Skill，用于对 GitHub 项目进行结构化、多渠道的深度调研。不是简单的 README 摘要——它会像一个认真的技术选型工程师那样，从多个渠道采集数据，自主提出 8-10 个现实问题并回答，最终生成一份有结论、有证据、有思考过程的调研报告。
+[中文版本](./README_zh.md)
 
-## 核心功能
+A Claude Code Skill for structured, multi-source deep research on GitHub projects. This isn't a simple README summary—it conducts research like a serious technical selection engineer, collecting data from multiple sources, autonomously generating and answering 8-10 real-world questions, and ultimately producing a research report with conclusions, evidence, and transparent thinking processes.
 
-给它一个 GitHub 项目（URL 或 `owner/repo`），它会：
+## Core Features
 
-1. **多渠道采集数据** — GitHub、知乎/小红书、Hacker News、StackOverflow、npm/PyPI、Reddit
-2. **自主提问并回答** — 站在不同角色（技术负责人、生产环境开发者、怀疑论者、新手）角度，生成 8-10 个现实中真正会问的问题
-3. **展示思考过程** — 报告包含 10 个核心问题的完整分析链路：问题 → 做了什么 → 结论 → 追问
-4. **生成结构化报告** — 8 个章节，每个章节末尾有苏格拉底式追问，挑战该节结论
+Given a GitHub project (URL or `owner/repo`), it will:
 
-## 效果展示
+1. **Multi-source Data Collection** — GitHub, Zhihu/Xiaohongshu, Hacker News, StackOverflow, npm/PyPI, Reddit
+2. **Autonomous Question Generation** — From different perspectives (tech lead, production developer, skeptic, newcomer), generating 8-10 real questions that people actually ask
+3. **Show Thinking Process** — Report includes complete analysis chain for 10 core questions: question → what was done → conclusion → follow-up
+4. **Generate Structured Report** — 8 chapters, each ending with Socratic questioning that challenges the chapter's conclusions
+
+## Demo
 
 ![image-20260504200617263](./img/image-20260504200617263.png)
 
-## 设计哲学
+## Design Philosophy
 
-### 问题驱动
+### Question-Driven
 
-调研的本质不是收集信息，而是回答问题。
+Research is not about collecting information—it's about answering questions.
 
-这个 skill 的工作流以 10 个核心问题为骨架展开——不是先采集数据再想怎么写报告，而是先提出问题，再带着问题去采集数据。每个问题对应一个具体的调研动作：
+This skill's workflow is structured around 10 core questions—not first collecting data then figuring out how to write the report, but first posing questions, then collecting data with those questions in mind. Each question corresponds to a specific research action:
 
-- "它是什么？" → 读 README，想一个类比
-- "没有它之前人们怎么忍受？" → 搜 issues 中的 `why`、`alternative`
-- "它比竞品差在哪？" → 搜 `wontfix`、`by design`、`limitation`
-- "作者为什么做这个？" → 读最早的 issues，找动机
+- "What is it?" → Read README, think of an analogy
+- "How did people cope without it?" → Search issues for `why`, `alternative`
+- "Where does it fall short compared to competitors?" → Search for `wontfix`, `by design`, `limitation`
+- "Why did the author build this?" → Read earliest issues to find motivation
 
-**数据服务于问题，不是问题服从于数据。** 先有问题，才知道该去哪里找答案。
+**Data serves questions, not questions bend to data.** First comes the question, then we know where to find answers.
 
-### 苏格拉底式追问
+### Socratic Questioning
 
-每个结论都不是终点。
+No conclusion is an endpoint.
 
-报告的每个章节末尾都有一个"追问"——用苏格拉底式问题挑战刚得出的结论：
+Each chapter ends with a "follow-up question"—Socratic questions that challenge the conclusion just reached:
 
-- 讲完"它是什么"后追问："如果只能用一句话向不懂技术的朋友解释，我会怎么说？"
-- 讲完"为什么用"后追问："这个痛点真的痛到需要一个新工具吗？"
-- 讲完"怎么用"后追问："5 分钟内能让同事看到效果吗？"
-- 讲完"竞品对比"后追问："它和最接近竞品的分叉点在哪？"
-- 讲完"核心优势"后追问："这个优势在什么场景下会变成劣势？"
+- After "what is it": "If I could only explain it to a non-technical friend in one sentence, what would I say?"
+- After "why use it": "Is this pain point really bad enough to need a new tool?"
+- After "how to use it": "Can I show a colleague results within 5 minutes?"
+- After "competitor comparison": "Where is the fork point between it and the closest competitor?"
+- After "core advantages": "Under what circumstances would this advantage become a disadvantage?"
 
-**追问的目的不是否定结论，而是让结论更结实。** 经得住追问的结论才值得信赖。
+**The purpose of follow-up questions is not to否定 conclusions, but to make them stronger.** Conclusions that withstand questioning are worth trusting.
 
-## 安装
+## Installation
 
-将本目录复制到 `~/.claude/skills/` 下即可。Claude Code 会自动发现。
+Copy this directory to `~/.claude/skills/`. Claude Code will discover it automatically.
 
 ```bash
 git clone https://github.com/weiambt/github-project-research
 cp -r github-project-research ~/.claude/skills/
 ```
 
-首次使用时会询问报告输出目录，默认写入 `~/research-docs/<project-name>.md`。
+On first use, it will ask for the report output directory. Default is `~/research-docs/<project-name>.md`.
 
-## 触发方式
+## How to Invoke
 
 ```
-/github-project-research 调研一下 github.com/owner/repo
+/github-project-research research github.com/owner/repo
 
-为什么XXX
+why XXX
 
-/github-project-research 产出调研报告
+/github-project-research generate research report
 ```
 
+## Report Structure
 
+| Chapter | Content |
+|---------|---------|
+| 1. What is it | One-sentence analogy + project positioning + tech stack + current status |
+| 2. Why use it | Pain points + advantages (with evidence) + competitor comparison (including weaknesses) + risks |
+| 3. How to use it | Installation + minimal working example + common scenarios + pitfalls |
+| 4. Internal implementation | Core abstractions + key design decisions (with tradeoffs) + author motivation |
+| 5. Type-specific | Additional dimensions based on project type (framework/tool/platform/learning material/Skill) |
+| 6. Common Questions QA | 8-10 autonomously generated real-world questions (not copied from GitHub issues) |
+| 7. Analysis Process | Transparency into the thinking process for 10 core questions |
+| 8. Summary | Conditional recommendation: recommendation level + conditions for recommendation + conditions for non-recommendation |
 
-## 报告结构
+## Data Sources
 
-| 章节 | 内容 |
-|------|------|
-| 1. 是什么 | 一句话类比 + 项目定位 + 技术栈 + 当前状态 |
-| 2. 为什么用 | 痛点场景 + 优势（附证据）+ 竞品对比（含劣势）+ 风险 |
-| 3. 怎么用 | 安装 + 最小可运行示例 + 常见场景 + 踩坑记录 |
-| 4. 内部实现 | 核心抽象 + 关键设计决策（含代价）+ 作者动机 |
-| 5. 类型特化 | 根据项目类型（框架/工具/平台/学习资料/Skill）补充特定维度 |
-| 6. 常见问题 QA | 8-10 个自主生成的现实问题（不是从 GitHub issues 抄的） |
-| 7. 分析过程 | 10 个核心问题的思考过程透明化 |
-| 8. 总结 | 有条件推荐：推荐度 + 推荐条件 + 不推荐条件 |
+| Source | Tool | Description |
+|--------|------|-------------|
+| GitHub | firecrawl scrape | Repo pages, README, releases, issues |
+| Hacker News | firecrawl search | Technical depth discussions, architecture reviews |
+| StackOverflow | firecrawl search | Common questions, solutions |
+| npm / PyPI | firecrawl scrape | Download counts, version history |
+| Zhihu / Xiaohongshu / Juejin | firecrawl search | Real user feedback, reviews (SPA sites) |
+| Reddit | firecrawl search | English community discussions |
+| Competitor research | firecrawl search | alternatives, vs |
 
-## 数据渠道
+## Interactive Workflow
 
-| 渠道 | 工具 | 说明 |
-|------|------|------|
-| GitHub | firecrawl scrape | 仓库页、README、releases、issues |
-| Hacker News | firecrawl search | 技术深度讨论、架构评价 |
-| StackOverflow | firecrawl search | 常见问题、解决方案 |
-| npm / PyPI | firecrawl scrape | 下载量、版本历史 |
-| 知乎 / 小红书 / 掘金 | firecrawl search | 真实用户反馈、评测（SPA 站点） |
-| Reddit | firecrawl search | 英文社区讨论 |
-| 竞品调研 | firecrawl search | alternatives、vs |
+Research isn't one-time. After the report is presented, you can continue asking:
 
-## 交互式工作流
+- "How does it compare to X?" → Deep competitor comparison
+- "How is its Y implemented?" → Source code architecture explanation
+- "Can it be used in scenario Z?" → Evaluate suitability for specific scenarios
+- "What are the pitfalls?" → Search issues and known problems
 
-调研不是一次性的。报告展示后，可以继续追问：
+Multiple projects can be researched in the same session, displayed side-by-side for comparison.
 
-- "和 X 比怎么样" → 深入竞品对比
-- "它的 Y 怎么实现的" → 读源码解释架构
-- "在 Z 场景下能用吗" → 评估特定场景适用性
-- "有什么坑" → 搜索 issues 和已知问题
-
-同一会话支持调研多个项目，对比时并排展示。
-
-
-
-## 文件结构
+## File Structure
 
 ```
 github-project-research/
-├── SKILL.md                          # 主文件：工作流定义
+├── SKILL.md                          # Main file: workflow definition
 ├── references/
-│   └── report-template.md            # 报告模板（生成报告时加载）
-└── agents/
-    └── openai.yaml                   # UI 元数据
+│   └── report-template.md            # Report template (loaded when generating reports)
+├── agents/
+│   └── openai.yaml                   # UI metadata
+└── README.md                        # English version
+└── README_zh.md                     # Chinese version
 ```
 
-## 设计原则
+## Design Principles
 
-- **展示思考过程，不只是结论** — 用户看到"怎么得出的"比"是什么"更有价值
-- **比劣势才是调研** — 只比优势是营销，诚实列出劣势才能帮人做判断
-- **自主生成 QA** — 不从 GitHub issues 抄问题，而是站在用户角度提出现实中真正会问的
-- **有条件推荐** — 不说"这个项目很好"，说"如果你需要 XX 选它，如果你需要 YY 选别的"
+- **Show thinking process, not just conclusions** — Seeing "how did we arrive at this" is more valuable to users than "what is it"
+- **Disadvantages are what make research real** — Only comparing advantages is marketing; honestly listing disadvantages helps people make decisions
+- **Autonomous QA generation** — Don't copy questions from GitHub issues; instead, pose questions from the user's perspective that people would actually ask in real life
+- **Conditional recommendations** — Don't say "this project is good"; instead say "choose this if you need XX, choose something else if you need YY"
